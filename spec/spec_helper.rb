@@ -1,6 +1,8 @@
 require "bundler/setup"
 require "byebug"
 require "activity_generator"
+require 'active_support'
+require "active_support/core_ext/numeric"
 
 RSpec.configure do |config|
   # Enable flags like --only-failures and --next-failure
