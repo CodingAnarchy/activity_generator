@@ -47,7 +47,7 @@ module ActivityGenerator
       {
         file: 'touch',
         dir: 'mkdir',
-        pipe: 'mknod'
+        pipe: 'mkfifo'
       }
     end
 
