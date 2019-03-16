@@ -1,4 +1,5 @@
 require "bundler/setup"
+require "byebug"
 require "activity_generator"
 
 RSpec.configure do |config|

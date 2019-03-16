@@ -1,0 +1,4 @@
+#!/usr/bin/env ruby
+require "activity_generator"
+
+puts "TODO: do something when running the tool"
