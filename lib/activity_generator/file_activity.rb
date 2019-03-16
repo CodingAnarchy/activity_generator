@@ -2,7 +2,7 @@ require 'socket'
 
 module ActivityGenerator
   class FileActivity
-    attr_reader :file_path, :activity
+    attr_reader :file_path, :activity, :process_data
 
     def initialize(activity_type, file_path, **options)
       @file_path = File.expand_path(file_path)
@@ -37,9 +37,9 @@ module ActivityGenerator
     def create_file
       if @file_type =~ /socket/
         UNIXServer.new(file_path) # Create the socket file
-        @process_data = Sys::ProcTable.ps(pid: ::Process.pid) # Get process data for this process
+        @process_data = ProcessData.new(Sys::ProcTable.ps(pid: ::Process.pid)) # Get process data for this process
       else
-        @process_data = ActivityGenerator::Process.new(file_cmds[@file_type], file_path).data
+        @process_data = ProcessData.new(Process.new(file_cmds[@file_type], file_path).data)
       end
     end
 
