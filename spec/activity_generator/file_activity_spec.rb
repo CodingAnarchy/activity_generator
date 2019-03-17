@@ -52,4 +52,18 @@ RSpec.describe ActivityGenerator::FileActivity do
       end
     end
   end
+
+  context "delete" do
+    context "file" do
+      before :each do
+        FileUtils.touch('/tmp/test')
+      end
+
+      it "deletes the file" do
+        described_class.new('delete', '/tmp/test')
+        Process.wait
+        expect(File.exist?('/tmp/test')).to be false
+      end
+    end
+  end
 end

@@ -30,7 +30,7 @@ module ActivityGenerator
       case activity
       when /create/ then create_file
       when /modify/
-      when /delete/
+      when /delete/ then delete_file
       end
     end
 
@@ -40,6 +40,13 @@ module ActivityGenerator
         @process_data = ProcessData.new(Sys::ProcTable.ps(pid: ::Process.pid)) # Get process data for this process
       else
         @process_data = ProcessData.new(Process.new(file_cmds[@file_type], file_path).data)
+      end
+    end
+
+    def delete_file
+      case File.ftype(file_path)
+      when /file|socket|fifo/
+        @process_data = ProcessData.new(Process.new('rm', file_path).data)
       end
     end
 
