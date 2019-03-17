@@ -2,8 +2,9 @@ require 'socket'
 
 module ActivityGenerator
   class NetworkActivity
+    include Logging
     include ProcessHandler
-    attr_reader :upload, :remote_addr, :remote_port, :local_addr, :process_data
+    attr_reader :upload, :remote_addr, :remote_port, :local_addr
 
     def initialize(upload: true, remote_addr: nil, remote_port: nil, transmit_filepath: nil)
       @upload = upload
@@ -26,10 +27,6 @@ module ActivityGenerator
       }
     end
 
-    def to_yaml
-      to_hash.to_yaml
-    end
-
     private
 
     def run
@@ -39,6 +36,7 @@ module ActivityGenerator
       else
         @process = Process.new(*cmd, "#{remote_addr}:#{remote_port}", record_output: true)
       end
+      log(self)
     end
 
     def default_remote_addr
@@ -57,7 +55,7 @@ module ActivityGenerator
       @process.output.split(' ')[0] # First part of curl -i header line, e.g.: HTTP/1.1
     end
 
-    def data_transmited
+    def data_transmitted
       upload ? File.size?(@transmit_file) : @process.output[/content-length: (\d+)/]
     end
   end

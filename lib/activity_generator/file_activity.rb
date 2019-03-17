@@ -2,6 +2,7 @@ require 'socket'
 
 module ActivityGenerator
   class FileActivity
+    include Logging
     include ProcessHandler
     attr_reader :file_path, :activity
 
@@ -21,18 +22,15 @@ module ActivityGenerator
       }
     end
 
-    def to_yaml
-      to_hash.to_yaml
-    end
-
     private
 
     def run
-      cmd = case activity
+      case activity
       when /create/ then create_file
       when /modify/ then modify_file
       when /delete/ then delete_file
       end
+      log(self)
     end
 
     def create_file
