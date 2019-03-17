@@ -2,6 +2,7 @@ require "sys/proctable"
 
 module ActivityGenerator
   class Process
+    include Logging
     attr_reader :pid, :data, :output
 
     def initialize(cmd_path, *args, record_output: false, distinct_log: false)
@@ -15,6 +16,10 @@ module ActivityGenerator
         output_read.close
       end
       log(self) if distinct_log
+    end
+
+    def to_hash
+      @data.to_hash
     end
   end
 end

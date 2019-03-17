@@ -9,7 +9,7 @@ module ActivityGenerator
     def initialize(upload: true, remote_addr: nil, remote_port: nil, transmit_filepath: nil)
       @upload = upload
       @remote_addr = remote_addr || default_remote_addr
-      @remote_port = remote_port || (upload ? '80' : '443')
+      @remote_port = remote_port || (@remote_addr =~ /https/ ? '443' : '80')
       @transmit_file = transmit_filepath.present? ? File.expand_path(transmit_filepath) : TEST_FILE
       run
     end

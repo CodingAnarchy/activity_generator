@@ -1,0 +1,39 @@
+---
+- process:
+    path: 'ls'
+    args:
+      - '-l'
+
+- file:
+    create:
+      type: 'file'
+      path: '/tmp/test_run'
+
+- file:
+    create:
+      type: 'socket'
+      path: '/tmp/test.sock'
+
+- file:
+    modify:
+      type: 'file'
+      path: '/tmp/test_run'
+
+- file:
+    delete:
+      type: 'file'
+      path: '/tmp/test_run'
+
+- file:
+    delete:
+      type: 'socket'
+      path: '/tmp/test.sock'
+
+- network:
+    upload: true
+    path: null # Use the test file created by default
+    address: 'http://devnull-as-a-service.com/dev/null'
+
+- network:
+    upload: false
+    address: 'https://microsoft.com'
