@@ -60,9 +60,23 @@ RSpec.describe ActivityGenerator::FileActivity do
       end
 
       it "deletes the file" do
+        expect(File.exist?('/tmp/test')).to be true
         described_class.new('delete', '/tmp/test')
         Process.wait
         expect(File.exist?('/tmp/test')).to be false
+      end
+    end
+
+    context "socket" do
+      before :each do
+        UNIXServer.new('/tmp/test.sock')
+      end
+
+      it "removes the socket file" do
+        expect(File.exist?('/tmp/test.sock')).to be true
+        described_class.new('delete', '/tmp/test.sock')
+        Process.wait
+        expect(File.exist?('/tmp/test.sock')).to be false
       end
     end
   end
