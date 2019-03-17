@@ -2,7 +2,7 @@ RSpec.describe ActivityGenerator::FileActivity do
   context "creation" do
     context "file" do
       after :each do
-        FileUtils.rm_f('/tmp/test.sock')
+        FileUtils.rm_f('/tmp/test')
       end
 
       it "leaves the created file" do
@@ -77,6 +77,19 @@ RSpec.describe ActivityGenerator::FileActivity do
         described_class.new('delete', '/tmp/test.sock')
         Process.wait
         expect(File.exist?('/tmp/test.sock')).to be false
+      end
+    end
+
+    context "fifo" do
+      before :each do
+        `mkfifo /tmp/pipe`
+      end
+
+      it "removes the fifo file" do
+        expect(File.pipe?('/tmp/pipe')).to be true
+        described_class.new('delete', '/tmp/pipe')
+        Process.wait
+        expect(File.exist?('/tmp/pipe')).to be false
       end
     end
   end
