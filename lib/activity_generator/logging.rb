@@ -6,7 +6,7 @@ module ActivityGenerator
     def to_yaml
       # Remove the leading triple-hyphen that separates docs: want it to be all one document
       # Bound it with a leading hyphen so the YAML dump interprets it as an element of a sequence
-      "- #{to_hash.to_yaml[5..-1].indent(2, " ", true)}"
+      "- #{to_hash.to_yaml.indent(2, " ", true)[8..-1]}"
     end
 
     def log(event)
