@@ -92,5 +92,18 @@ RSpec.describe ActivityGenerator::FileActivity do
         expect(File.exist?('/tmp/pipe')).to be false
       end
     end
+
+    context "directory" do
+      before :each do
+        FileUtils.mkdir_p('/tmp/test_dir')
+      end
+
+      it "removes the directory" do
+        expect(File.directory?('/tmp/test_dir')).to be true
+        described_class.new('delete', '/tmp/test_dir')
+        Process.wait
+        expect(File.exist?('/tmp/test_dir')).to be false
+      end
+    end
   end
 end

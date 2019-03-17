@@ -47,6 +47,8 @@ module ActivityGenerator
       case File.ftype(file_path)
       when /file|socket|fifo/
         @process_data = ProcessData.new(Process.new('rm', file_path).data)
+      when /dir/
+        @process_data = ProcessData.new(Process.new('rm', '-r', file_path).data)
       end
     end
 
