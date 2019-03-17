@@ -30,5 +30,13 @@ module ActivityGenerator
       return nil unless OS.linux? # Guard against using this if the system is not Linux
       proc_table.starttime/LinuxCLib::hz + BOOTTIME
     end
+
+    def method_missing(m, *args, &block)
+      if self.to_hash[:process].keys.include?(m)
+        self.to_hash[:process][m]
+      else
+        super
+      end
+    end
   end
 end

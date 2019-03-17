@@ -8,6 +8,7 @@ require "activity_generator/file_activity"
 require "activity_generator/network_activity"
 
 module ActivityGenerator
+  class ActionComplete < StandardError; end
   class Error < StandardError; end
   # Your code goes here...
 
@@ -28,7 +29,22 @@ module ActivityGenerator
     end
 
     def input_loop
-
+      print "Activity Request > "
+      user_input = gets.chomp.split(" ")
+      case user_input.first
+      when /process/ then input_process(*user_input[1..-1])
+      when /file/ then input_file(*user_input[1..-1])
+      when /network/ then input_network(*user_input[1..-1])
+      when /exit/ then return
+      else
+        raise ArgumentError.new("Incorrect input arguments. Expected one of:\n  process command_path [arg1] [arg2] ... [argN]\n  file create/modify/delete file_path [file_type: 'file'/'socket'/'dir'/'pipe']\n  network address [file path to upload]\n\nInput `exit` to quit.\n")
+      end
+      raise ActionComplete
+    rescue ArgumentError => e
+      puts e.to_s
+      retry
+    rescue ActionComplete
+      retry
     end
 
     private
@@ -44,6 +60,26 @@ module ActivityGenerator
 
     def network_activity(network_hash)
       NetworkActivity.new(upload: network_hash["upload"], remote_addr: network_hash["address"], transmit_filepath: network_hash["path"])
+    end
+
+    def input_process(path, *args)
+      puts "Running #{path}..."
+      process = run_process({path: path, args: args}.stringify_keys)
+      puts "Started #{process.data.cmdline}..."
+    end
+
+    def input_file(action, path, file_type=nil)
+      puts "Performing #{action} on #{path}..."
+      file_activity({action => {path: path, type: file_type}.stringify_keys})
+    end
+
+    def input_network(address, upload_path=nil)
+      puts "Connecting to #{address} and #{upload_path.present? ? 'transmitting' : 'receiving'} data..."
+      if upload_path.present?
+        network_activity({address: address, transmit_filepath: upload_path, upload: true}.stringify_keys)
+      else
+        network_activity({address: address, upload: false})
+      end
     end
   end
 end
