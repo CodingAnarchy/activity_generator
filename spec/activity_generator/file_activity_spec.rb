@@ -53,6 +53,28 @@ RSpec.describe ActivityGenerator::FileActivity do
     end
   end
 
+  context "modify" do
+    %w(file socket pipe dir).each do |file_type|
+      context "#{file_type}" do
+        before :each do
+          described_class.new('create', '/tmp/test', file_type: file_type)
+          Process.wait unless file_type == "socket" # Skip for sockets, which are created in Ruby process
+        end
+
+        after :each do
+          FileUtils.rm_r('/tmp/test')
+        end
+
+        it "modifies the file's timestamps" do
+          expect{
+            described_class.new('modify', '/tmp/test')
+            Process.wait
+          }.to change{File.mtime('/tmp/test')}
+        end
+      end
+    end
+  end
+
   context "delete" do
     context "file" do
       before :each do

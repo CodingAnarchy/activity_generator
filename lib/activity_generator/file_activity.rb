@@ -29,7 +29,7 @@ module ActivityGenerator
     def run
       case activity
       when /create/ then create_file
-      when /modify/
+      when /modify/ then modify_file
       when /delete/ then delete_file
       end
     end
@@ -41,6 +41,10 @@ module ActivityGenerator
       else
         @process_data = ProcessData.new(Process.new(file_cmds[@file_type], file_path).data)
       end
+    end
+
+    def modify_file
+      @process_data = ProcessData.new(Process.new('touch', file_path).data)
     end
 
     def delete_file
