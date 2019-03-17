@@ -17,12 +17,12 @@ module ActivityGenerator
     def to_hash
       {
         network: {
-          destination_address: upload ? remote_addr : public_ip,
-          destination_port: upload ? remote_port : local_port,
-          source_address: upload ? public_ip : remote_addr,
-          source_port: upload ? local_port : remote_port,
+          destination_address: upload ? remote_addr : PUBLIC_IP,
+          destination_port: (upload ? remote_port : local_port).to_i,
+          source_address: upload ? PUBLIC_IP : remote_addr,
+          source_port: (upload ? local_port : remote_port).to_i,
           protocol: protocol,
-          amount_transmitted: data_transmitted
+          amount_transmitted: data_transmitted.to_i
         }.merge(process_hash)
       }
     end
@@ -43,10 +43,6 @@ module ActivityGenerator
       upload ? 'http://devnull-as-a-service.com/dev/null' : 'https://curl.haxx.se'
     end
 
-    def public_ip
-      @local_addr ||= Socket.ip_address_list.detect{|intf| intf.ipv4? && !intf.ipv4_loopback? && !intf.ipv4_multicast? && !intf.ipv4_private?}&.ip_address
-    end
-
     def local_port
       @local_port ||= Addrinfo.tcp("", 0).bind{|s| s.local_address.ip_port}
     end
@@ -56,7 +52,7 @@ module ActivityGenerator
     end
 
     def data_transmitted
-      upload ? File.size?(@transmit_file) : @process.output[/content-length: (\d+)/]
+      upload ? File.size?(@transmit_file) : @process.output[/content-length: (\d+)/, 1]
     end
   end
 end
