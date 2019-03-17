@@ -1,0 +1,25 @@
+#!/usr/bin/env ruby
+require 'optparse'
+require "activity_generator"
+
+options = {}
+OptionParser.new do |opts|
+  opts.banner = "Usage: activity_generator [options]"
+
+  opts.on('-f' '--file-path', "Path to YAML file containing pre-populated sequence of activity to generate") do |f|
+    options[:file_path] = f
+  end
+
+  opts.on("-h", "--help", "Prints the help") do
+    puts opts
+    exit
+  end
+end.parse!
+
+if options[:file_path].present?
+  puts "Running through the sequence populated from #{options[:file_path]}..."
+  ActivityGenerator::Runner.new(file: options[:file_path])
+else
+  puts "Dropping into interactive prompt for custom sequence input... (input `exit` to quit)"
+  ActivityGenerator::Runner.new
+end
