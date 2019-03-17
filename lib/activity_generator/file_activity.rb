@@ -2,7 +2,8 @@ require 'socket'
 
 module ActivityGenerator
   class FileActivity
-    attr_reader :file_path, :activity, :process_data
+    include ProcessHandler
+    attr_reader :file_path, :activity
 
     def initialize(activity_type, file_path, **options)
       @file_path = File.expand_path(file_path)
@@ -27,7 +28,7 @@ module ActivityGenerator
     private
 
     def run
-      case activity
+      cmd = case activity
       when /create/ then create_file
       when /modify/ then modify_file
       when /delete/ then delete_file
@@ -37,23 +38,17 @@ module ActivityGenerator
     def create_file
       if @file_type =~ /socket/
         UNIXServer.new(file_path) # Create the socket file
-        @process_data = ProcessData.new(Sys::ProcTable.ps(pid: ::Process.pid)) # Get process data for this process
       else
-        @process_data = ProcessData.new(Process.new(file_cmds[@file_type], file_path).data)
+        @process = Process.new(file_cmds[@file_type], file_path)
       end
     end
 
     def modify_file
-      @process_data = ProcessData.new(Process.new('touch', file_path).data)
+      @process = Process.new('touch', file_path)
     end
 
     def delete_file
-      case File.ftype(file_path)
-      when /file|socket|fifo/
-        @process_data = ProcessData.new(Process.new('rm', file_path).data)
-      when /dir/
-        @process_data = ProcessData.new(Process.new('rm', '-r', file_path).data)
-      end
+      @process = Process.new('rm', '-r', file_path)
     end
 
     def file_cmds
@@ -62,10 +57,6 @@ module ActivityGenerator
         dir: 'mkdir',
         pipe: 'mkfifo'
       }
-    end
-
-    def process_hash
-      @process_data.to_hash
     end
   end
 end

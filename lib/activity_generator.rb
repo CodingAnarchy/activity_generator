@@ -1,5 +1,6 @@
 require "activity_generator/version"
 require "activity_generator/logger"
+require "activity_generator/process_handler"
 require "activity_generator/process_data"
 require "activity_generator/process"
 require "activity_generator/file_activity"

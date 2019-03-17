@@ -2,6 +2,7 @@ require 'socket'
 
 module ActivityGenerator
   class NetworkActivity
+    include ProcessHandler
     attr_reader :upload, :remote_addr, :remote_port, :local_addr, :process_data
 
     def initialize(upload: true, remote_addr: nil, remote_port: nil, transmit_filepath: nil)
@@ -19,6 +20,8 @@ module ActivityGenerator
           destination_port: upload ? remote_port : local_port,
           source_address: upload ? public_ip : remote_addr,
           source_port: upload ? local_port : remote_port,
+          protocol: protocol,
+          amount_transmitted: data_transmitted
         }.merge(process_hash)
       }
     end
@@ -30,11 +33,11 @@ module ActivityGenerator
     private
 
     def run
-      cmd = ['curl', '--local-port', local_port.to_s]
+      cmd = ['curl', '-i', '--local-port', local_port.to_s]
       if upload
-        @process_data = ProcessData.new(Process.new(*cmd, '-d', "#{@transmit_file}", '-X', 'POST', "#{remote_addr}:#{remote_port}").data)
+        @process = Process.new(*cmd, '-d', "#{@transmit_file}", '-X', 'POST', "#{remote_addr}:#{remote_port}", record_output: true)
       else
-        @process_data = ProcessData.new(Process.new(*cmd, "#{remote_addr}:#{remote_port}").data)
+        @process = Process.new(*cmd, "#{remote_addr}:#{remote_port}", record_output: true)
       end
     end
 
@@ -50,8 +53,12 @@ module ActivityGenerator
       @local_port ||= Addrinfo.tcp("", 0).bind{|s| s.local_address.ip_port}
     end
 
-    def process_hash
-      @process_data.to_hash
+    def protocol
+      @process.output.split(' ')[0] # First part of curl -i header line, e.g.: HTTP/1.1
+    end
+
+    def data_transmited
+      upload ? File.size?(@transmit_file) : @process.output[/content-length: (\d+)/]
     end
   end
 end
