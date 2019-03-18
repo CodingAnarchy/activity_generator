@@ -6,8 +6,12 @@ options = {}
 OptionParser.new do |opts|
   opts.banner = "Usage: activity_generator [options]"
 
-  opts.on('-f' '--file-path', "Path to YAML file containing pre-populated sequence of activity to generate") do |f|
-    options[:file_path] = f
+  opts.on('-f', '--file=FILE_PATH', String, "Path to YAML file containing pre-populated sequence of activity to generate") do |f|
+    options[:file] = f
+  end
+
+  opts.on('-l', '--log-path=LOG_PATH', String, "Path to write log file of activity") do |log_path|
+    options[:log_path] = log_path
   end
 
   opts.on("-h", "--help", "Prints the help") do
@@ -16,10 +20,10 @@ OptionParser.new do |opts|
   end
 end.parse!
 
-if options[:file_path].present?
-  puts "Running through the sequence populated from #{options[:file_path]}..."
-  ActivityGenerator::Runner.new(file: options[:file_path])
+if options[:file].present?
+  puts "Running through the sequence populated from #{options[:file]}..."
 else
   puts "Dropping into interactive prompt for custom sequence input... (input `exit` to quit)"
-  ActivityGenerator::Runner.new
 end
+
+ActivityGenerator::Runner.new(options)

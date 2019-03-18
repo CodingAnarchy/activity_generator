@@ -16,7 +16,7 @@ module ActivityGenerator
     cattr_reader :log_path
 
     def initialize(file: nil, log_path: nil)
-      @@log_path = log_path.presence
+      @@log_path = log_path
       file.present? ? run(file) : input_loop
     end
 
@@ -40,7 +40,7 @@ module ActivityGenerator
       when /network/ then input_network(*user_input[1..-1])
       when /exit/ then return
       else
-        raise ArgumentError.new("Incorrect input arguments. Expected one of:\n  process command_path [arg1] [arg2] ... [argN]\n  file create/modify/delete file_path [file_type: 'file'/'socket'/'dir'/'pipe']\n  network address [file path to upload]\n\nInput `exit` to quit.\n")
+        raise ArgumentError.new("Incorrect input arguments. Expected one of:\n  process command_path [arg1] [arg2] ... [argN]\n  file create/modify/delete file_path [file_type: 'file'/'socket'/'dir'/'pipe']\n  network address [file path to upload] [download file location (ftp only)]\n\nInput `exit` to quit.\n")
       end
       raise ActionComplete
     rescue ArgumentError => e
@@ -53,32 +53,32 @@ module ActivityGenerator
     private
 
     def run_process(process_hash)
-      Process.new(process_hash["path"], *process_hash["args"], distinct_log: true)
+      process = Process.new(process_hash["path"], *process_hash["args"], distinct_log: true)
+      puts "Started #{process.data.cmdline}..."
     end
 
     def file_activity(file_hash)
       action = file_hash.keys.first
+      puts "Performing #{action} on #{file_hash[action]["path"]}..."
       FileActivity.new(action, file_hash[action]["path"], file_type: file_hash[action]["type"])
     end
 
     def network_activity(network_hash)
-      NetworkActivity.new(remote_addr: network_hash["address"], transmit_filepath: network_hash["path"])
+      puts "Connecting to #{network_hash["address"]} and sending data..."
+      NetworkActivity.new(remote_addr: network_hash["address"], transmit_filepath: network_hash["transmit_path"], download_filename: network_hash["download_path"])
     end
 
     def input_process(path, *args)
       puts "Running #{path}..."
-      process = run_process({path: path, args: args}.stringify_keys)
-      puts "Started #{process.data.cmdline}..."
+      run_process({path: path, args: args}.stringify_keys)
     end
 
     def input_file(action, path, file_type=nil)
-      puts "Performing #{action} on #{path}..."
       file_activity({action => {path: path, type: file_type}.stringify_keys})
     end
 
-    def input_network(address, upload_path=nil)
-      puts "Connecting to #{address} and #{upload_path.present? ? 'transmitting' : 'receiving'} data..."
-      network_activity({address: address, transmit_filepath: upload_path}.stringify_keys)
+    def input_network(address, upload_path=nil, download_path=nil)
+      network_activity({address: address, transmit_path: upload_path, download_path: download_path}.stringify_keys)
     end
   end
 end

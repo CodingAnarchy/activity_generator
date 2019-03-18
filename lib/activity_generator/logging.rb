@@ -1,6 +1,6 @@
 module ActivityGenerator
   module Logging
-    DEFAULT_LOG_PATH = File.expand_path("~/log")
+    DEFAULT_LOG_PATH = "~/log"
     
     def to_yaml
       # Remove the leading triple-hyphen that separates docs: want it to be all one document
@@ -9,8 +9,8 @@ module ActivityGenerator
     end
 
     def log(event)
-      FileUtils.mkdir_p(log_path)
       @logfile ||= "#{log_path}/activity_generator_#{::Process.pid}.log"
+      FileUtils.mkdir_p(log_path) unless File.directory?(log_path)
       open(@logfile, "a") do |f|
         f << event.to_yaml
         f << "\n"
@@ -18,7 +18,8 @@ module ActivityGenerator
     end
 
     def log_path
-      ActivityGenerator::Runner.log_path || DEFAULT_LOG_PATH
+      @path ||= ActivityGenerator::Runner.log_path || DEFAULT_LOG_PATH
+      File.expand_path(@path)
     end
   end
 end

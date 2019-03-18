@@ -30,8 +30,17 @@
       path: '/tmp/test.sock'
 
 - network:
-    path: '/tmp/transmit_test_file' # Use the test file created by default
+    transmit_path: '/tmp/transmit_test_file' # Use the test file created by default
     address: 'http://devnull-as-a-service.com/dev/null'
 
 - network:
     address: 'https://microsoft.com'
+
+- network:
+    transmit_path: '/tmp/transmit_test_file' # Use the test file created by default
+    address: "ftp://anonymous:test@speedtest.tele2.net/upload/"
+
+- network:
+    address: "ftp://anonymous:test@speedtest.tele2.net/"
+    transmit_path: '/tmp/ftp_download_test'
+    download_path: "100MB.zip"

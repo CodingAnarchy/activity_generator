@@ -1,4 +1,5 @@
 require "os"
+require "fileutils"
 require "securerandom"
 require "net/http"
 require "active_support/core_ext/string"
