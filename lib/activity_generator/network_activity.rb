@@ -4,10 +4,11 @@ module ActivityGenerator
   class NetworkActivity
     include Logging
     include ProcessHandler
-    attr_reader :protocol, :remote_address, :transmit_file
+    attr_reader :protocol, :remote_address, :transmit_file, :download_file
 
-    def initialize(remote_addr: nil, transmit_filepath: nil)
-      @transmit_file = transmit_filepath.present? && File.expand_path(transmit_filepath)
+    def initialize(remote_addr: nil, transmit_filepath: nil, download_filename: nil)
+      @transmit_file = transmit_filepath.present? ? File.expand_path(transmit_filepath) : nil
+      @download_file = download_filename
       @remote_address = remote_addr || default_remote_addr
       @protocol = remote_address[/^(\w+):/, 1]
       run
@@ -29,15 +30,27 @@ module ActivityGenerator
     private
 
     def upload?
-      transmit_file.present?
+      transmit_file.present? and not download_file.present?
+    end
+
+    def missing_login?
+      !(remote_address =~ /\w+:\w+@/)
     end
 
     def run
       cmd = ['curl', '-v', '--local-port', local_port.to_s]
-      if upload?
-        @process = Process.new(*cmd, '-d', "#{@transmit_file}", "#{remote_address}", record_output: true)
-      else
-        @process = Process.new(*cmd, "#{remote_address}", record_output: true)
+      case protocol
+      when /http/
+        cmd += ['-d', transmit_file] if upload?
+        @process = Process.new(*cmd, remote_address, record_output: true)
+      when /ftp/
+        if missing_login?
+          puts "Can't use FTP without login credentials."
+          return
+        end
+
+        ftp_address = "#{remote_address}#{"/#{download_file}" unless upload?}"
+        @process = Process.new(*cmd, ftp_address, upload? ? '-T' : '-o', transmit_file, '--ftp-port', '-', record_output: true)
       end
       log(self)
     end
@@ -51,11 +64,16 @@ module ActivityGenerator
     end
 
     def remote_port
-      @process.output[/port (\d+)/, 1]
+      case protocol
+      when "ftp" then 21 # FTP is served from port 21
+      else
+        @process.output[/port (\d+)/, 1]
+      end
     end
 
     def data_transmitted
-      upload? ? File.size?(@transmit_file) : @process.output[/content-length: (\d+)/i, 1]
+      return File.size?(transmit_file) if transmit_file.present? # Uploaded file or file downloaded to local location
+      @process.output[/content-length: (\d+)/i, 1]
     end
   end
 end

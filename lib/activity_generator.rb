@@ -13,7 +13,10 @@ module ActivityGenerator
   # Your code goes here...
 
   class Runner
-    def initialize(file: nil)
+    cattr_reader :log_path
+
+    def initialize(file: nil, log_path: nil)
+      @@log_path = log_path.presence
       file.present? ? run(file) : input_loop
     end
 
