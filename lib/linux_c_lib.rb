@@ -1,4 +1,5 @@
 require 'ffi'
+require 'ffi/tools/const_generator' # This wasn't being loaded by the FFI gem as a whole
 
 module LinuxCLib
   extend FFI::Library
