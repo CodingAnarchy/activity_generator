@@ -51,6 +51,7 @@ module ActivityGenerator
 
         ftp_address = "#{remote_address}#{"/#{download_file}" unless upload?}"
         @process = Process.new(*cmd, ftp_address, upload? ? '-T' : '-o', transmit_file, '--ftp-port', '-', record_output: true)
+        puts "FTP activity failed. FTP network configuration may not work on this system." unless $?.success?
       end
       log(self)
     end
