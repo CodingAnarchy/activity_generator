@@ -11,10 +11,11 @@ RSpec.describe ActivityGenerator::NetworkActivity do
     end
   end
 
-  context "ftp" do
+  # Have to skip on linux automated testing; travis CI infrastructure doesn't work for FTP on linux
+  # See: https://blog.travis-ci.com/2018-07-23-the-tale-of-ftp-at-travis-ci
+  context "ftp", skip: OS.linux? do
     it "successfully completes an upload" do
       described_class.new(remote_addr: "ftp://anonymous:test@speedtest.tele2.net/upload/", transmit_filepath: TEST_FILE)
-      puts $?
       expect($?&.success?).to be true
     end
 
