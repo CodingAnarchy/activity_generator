@@ -67,6 +67,7 @@ RSpec.describe ActivityGenerator::FileActivity do
 
         it "modifies the file's timestamps" do
           expect{
+            sleep(2) # Wait a bit so the timestamps definitely should be different
             described_class.new('modify', '/tmp/test')
             Process.wait
           }.to change{File.mtime('/tmp/test')}
