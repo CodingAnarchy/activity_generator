@@ -59,7 +59,7 @@ module ActivityGenerator
     end
 
     def network_activity(network_hash)
-      NetworkActivity.new(upload: network_hash["upload"], remote_addr: network_hash["address"], transmit_filepath: network_hash["path"])
+      NetworkActivity.new(remote_addr: network_hash["address"], transmit_filepath: network_hash["path"])
     end
 
     def input_process(path, *args)
@@ -75,11 +75,7 @@ module ActivityGenerator
 
     def input_network(address, upload_path=nil)
       puts "Connecting to #{address} and #{upload_path.present? ? 'transmitting' : 'receiving'} data..."
-      if upload_path.present?
-        network_activity({address: address, transmit_filepath: upload_path, upload: true}.stringify_keys)
-      else
-        network_activity({address: address, upload: false})
-      end
+      network_activity({address: address, transmit_filepath: upload_path}.stringify_keys)
     end
   end
 end
