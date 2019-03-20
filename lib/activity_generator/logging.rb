@@ -1,6 +1,8 @@
 module ActivityGenerator
   module Logging
     DEFAULT_LOG_PATH = "~/log"
+
+    cattr_reader :logfile
     
     def to_yaml
       # Remove the leading triple-hyphen that separates docs: want it to be all one document
@@ -9,12 +11,15 @@ module ActivityGenerator
     end
 
     def log(event)
-      @logfile ||= "#{log_path}/activity_generator_#{::Process.pid}.log"
       FileUtils.mkdir_p(log_path) unless File.directory?(log_path)
-      open(@logfile, "a") do |f|
+      open(logfile, "a") do |f|
         f << event.to_yaml
         f << "\n"
       end
+    end
+
+    def logfile
+      @@logfile ||= "#{log_path}/activity_generator_#{::Process.pid}.log"
     end
 
     def log_path
