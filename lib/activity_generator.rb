@@ -18,6 +18,7 @@ module ActivityGenerator
     def initialize(file: nil, log_path: nil)
       @@log_path = log_path
       file.present? ? run(file) : input_loop
+      puts "Generated activity log located at #{ActivityGenerator::Logging.logfile}"
     end
 
     def run(file)
